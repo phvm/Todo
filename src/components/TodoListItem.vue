@@ -1,6 +1,8 @@
 <template>
   <div class="listItem">
-    <ListItemCheckbox :is-done="isDone" :on-click="markCheckbox" />
+    <button class="checkbox" @click="$emit('mark')" :class="{ done: isDone }">
+      <img src="../assets/icons/doneIcon.svg" alt="Icone de item concluido" v-if="isDone" />
+    </button>
     <p class="itemTitle" :style="isDone ? titleStyleDone : ''">
       {{ title }}
     </p>
@@ -15,13 +17,11 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue';
-import ListItemCheckbox from './ListItemCheckbox.vue';
 
-defineProps({
-  isDone: Boolean,
-  title: String,
-  markCheckbox: Function
-});
+defineProps<{
+  isDone: boolean;
+  title: string;
+}>();
 
 const titleStyleDone = reactive({
   textDecoration: 'line-through',
@@ -48,12 +48,27 @@ const titleStyleDone = reactive({
 .itemTitle {
   width: 100%;
 }
-.checkbox {
-  margin: 0 10px;
-}
 
 .deleteIcon {
   margin-right: 8px;
   cursor: pointer;
+}
+
+.checkbox {
+  border-radius: 100%;
+  min-width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  background-color: rgba(255, 255, 255, 0.12);
+  padding: 0;
+  margin: 0 10px;
+}
+.checkbox:hover {
+  border: 2px solid #00ffff;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.done {
+  background-color: rgba(255, 255, 255, 0.25);
 }
 </style>
