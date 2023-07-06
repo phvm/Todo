@@ -22,8 +22,8 @@
             :key="index"
             :title="item.title"
             :is-done="item.isDone"
-            :markCheckbox="markCheckbox"
             @delete-item="deleteListItem(index)"
+            @mark="markCheckbox(index)"
           />
         </TransitionGroup>
       </div>
@@ -34,11 +34,13 @@
           <p v-else>Nenhum item registrado</p>
         </div>
         <div id="filterListOptions">
-          <p>Todas</p>
-          <p>Ativas</p>
-          <p>Concluídas</p>
+          <button>Todas</button>
+          <button>Ativas</button>
+          <button>Concluídas</button>
         </div>
-        <p id="clearList">Limpar Concluídas</p>
+        <div id="clearList">
+          <button type="button" @click="clearCompletedTasks">Limpar Concluídas</button>
+        </div>
       </footer>
     </div>
   </div>
@@ -50,6 +52,7 @@ import type { TodoListItemType } from '@/utils/interfaces';
 import { ref } from 'vue';
 
 const savedItems = ref<TodoListItemType[]>([]);
+const filteredItems = ref<TodoListItemType[]>([]);
 const input = ref<string>('');
 
 function pushListItem(): void {
@@ -66,13 +69,16 @@ function markCheckbox(index: number) {
 }
 
 function clearCompletedTasks() {
-  savedItems;
+  const filterCompletedItems = savedItems.value.filter((listItem) => {
+    return !listItem.isDone;
+  });
+  savedItems.value = filterCompletedItems;
 }
 </script>
 
 <style scoped>
 #todoList {
-  max-width: 400px;
+  max-width: max(28dvw, 400px);
   min-width: 100px;
   display: flex;
   flex-direction: column;
@@ -133,6 +139,14 @@ function clearCompletedTasks() {
       color: #ffffff;
     }
   }
+  & button {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    &:hover {
+      color: #ffffff;
+    }
+  }
 }
 
 #itemsRemaining {
@@ -149,14 +163,19 @@ function clearCompletedTasks() {
   align-items: center;
   font-size: 0.75rem;
   width: 40%;
-  & p:hover {
+  & button:hover {
     cursor: pointer;
   }
 }
 
 #clearList {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
   font-size: 0.75rem;
-  &:hover {
+  color: rgba(255, 255, 255, 0.5);
+  & button:hover {
+    color: #ffffff;
     cursor: pointer;
   }
 }
