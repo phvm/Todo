@@ -4,39 +4,42 @@
     <div id="wrapper">
       <div id="insertMenu">
         <button id="addItem" type="button" @click="pushListItem">
-          <img src="../assets/icons/addIcon.svg" alt="Icon para adicionar item na lista" />
+          <img alt="Icon para adicionar item na lista" src="../assets/icons/addIcon.svg" />
         </button>
         <input
           id="itemDescription"
+          v-model="input"
           placeholder="O que você precisa fazer?"
           type="text"
-          v-model="input"
-          @keypress.enter="pushListItem"
+          @keydown.enter="pushListItem"
         />
       </div>
 
       <div id="itemsList">
         <TransitionGroup name="list">
           <TodoListItem
-            v-for="(item, index) in savedItems"
+            v-for="(item, index) in filteredItems"
             :key="index"
-            :title="item.title"
             :is-done="item.isDone"
-            @delete-item="deleteListItem(index)"
+            :title="item.title"
             @mark="markCheckbox(index)"
+            @delete-item="deleteListItem(index)"
           />
         </TransitionGroup>
       </div>
 
       <footer id="moreOptions">
         <div id="itemsRemaining">
-          <p v-if="savedItems.length !== 0">{{ savedItems.length }} items restantes</p>
+          <p v-if="filteredItems.length !== 0" id="itemAmount">
+            {{ filteredItems.length }}
+            {{ filteredItems.length === 1 ? 'item restante' : 'items restantes' }}
+          </p>
           <p v-else>Nenhum item registrado</p>
         </div>
         <div id="filterListOptions">
-          <button>Todas</button>
-          <button>Ativas</button>
-          <button>Concluídas</button>
+          <button @click="filter = 'all'">Todas</button>
+          <button @click="filter = 'active'">Ativas</button>
+          <button @click="filter = 'done'">Concluídas</button>
         </div>
         <div id="clearList">
           <button type="button" @click="clearCompletedTasks">Limpar Concluídas</button>
@@ -46,18 +49,31 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import TodoListItem from './TodoListItem.vue';
 import type { TodoListItemType } from '@/utils/interfaces';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const savedItems = ref<TodoListItemType[]>([]);
-const filteredItems = ref<TodoListItemType[]>([]);
+const filter = ref<string>('all');
+
+const filteredItems = computed(() => {
+  if (filter.value === 'done') {
+    return savedItems.value.filter((item) => item.isDone);
+  }
+  if (filter.value === 'active') {
+    return savedItems.value.filter((item) => !item.isDone);
+  }
+  return savedItems.value;
+});
 const input = ref<string>('');
 
 function pushListItem(): void {
-  savedItems.value.push({ isDone: false, title: input.value });
-  input.value = '';
+  if (input.value !== '') {
+    savedItems.value.push({ isDone: false, title: input.value });
+    input.value = '';
+  }
+  alert('Você precisa inserir um valor!');
 }
 
 function deleteListItem(index: number): void {
@@ -69,21 +85,21 @@ function markCheckbox(index: number) {
 }
 
 function clearCompletedTasks() {
-  const filterCompletedItems = savedItems.value.filter((listItem) => {
+  savedItems.value = savedItems.value.filter((listItem) => {
     return !listItem.isDone;
   });
-  savedItems.value = filterCompletedItems;
 }
 </script>
 
 <style scoped>
 #todoList {
-  max-width: max(28dvw, 400px);
+  max-width: max(28dvw, 600px);
   min-width: 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0 50px;
+
   &,
   #title {
     margin: 0 auto;
@@ -99,6 +115,10 @@ function clearCompletedTasks() {
 .list-leave-to {
   opacity: 0;
   transform: translateY(15px);
+}
+
+#itemAmount {
+  font-size: 0.8rem;
 }
 
 #wrapper {
@@ -132,17 +152,21 @@ function clearCompletedTasks() {
   border-radius: 0 0 4px 4px;
   min-height: 30px;
   background-color: rgba(255, 255, 255, 0.1);
+
   & p {
     text-align: center;
     color: rgba(255, 255, 255, 0.5);
+
     &:hover {
       color: #ffffff;
     }
   }
+
   & button {
     background: none;
     border: none;
     color: rgba(255, 255, 255, 0.5);
+
     &:hover {
       color: #ffffff;
     }
@@ -163,6 +187,7 @@ function clearCompletedTasks() {
   align-items: center;
   font-size: 0.75rem;
   width: 40%;
+
   & button:hover {
     cursor: pointer;
   }
@@ -174,6 +199,7 @@ function clearCompletedTasks() {
   align-items: center;
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
+
   & button:hover {
     color: #ffffff;
     cursor: pointer;
@@ -184,6 +210,7 @@ function clearCompletedTasks() {
   & {
     background-color: rgba(255, 255, 255, 0.1);
   }
+
   height: 50px;
   width: 100%;
   border-radius: 4px;
@@ -204,6 +231,7 @@ function clearCompletedTasks() {
   display: flex;
   justify-content: center;
   align-items: center;
+
   &:hover {
     border: 2px solid #00ffff;
   }
@@ -219,6 +247,7 @@ function clearCompletedTasks() {
   border-radius: inherit;
   border: 0;
   padding: 0 0 0 10px;
+
   &:focus {
     outline: 0;
   }
